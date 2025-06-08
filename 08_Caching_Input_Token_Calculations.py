@@ -44,7 +44,7 @@ def generate_text_with_cache() -> str:
 	output_ids = model.generate(
 		input_ids=input_ids,
 		max_new_tokens=max_tokens,
-		use_cache=True  # The default is to use key/value caching
+		use_cache=True  # The default is to use key/value caching - but we'll be specific about it here
 	)
 	return tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
@@ -53,7 +53,7 @@ def generate_text_without_cache() -> str:
 	output_ids = model.generate(
 		input_ids=input_ids,
 		max_new_tokens=max_tokens,
-		use_cache=False  # Without key/value caching we'll process every single input token right the way through all the transformer blocks
+		use_cache=False  # Without key/value caching we'll process every single input token right the way through all the transformer blocks!
 	)
 	return tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
