@@ -1,4 +1,3 @@
-# ACL 2025-06-05
 # Note: This code is configured to work with Python 3.11 on initial write.
 # Also: We needed to run `pip install accelerate` to be able to set "cuda" as the device map
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline

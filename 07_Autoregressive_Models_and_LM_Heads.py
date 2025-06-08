@@ -72,6 +72,7 @@ input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
 # From p82: "The answer is that the final calculations of the previous streams are required and used in calculating
 # the FINAL stream" (that goes into the LM Head).
 model_output = model.model(input_ids)
+print("\nModel output shape is: " + str(model_output[0].shape))
 
 # Pass the hidden states through the LM head to get "logits".
 # Note: "logits" are the probability SCORES - but they are not the ACTUAL probabilities like "70% chance" or something.
@@ -85,7 +86,7 @@ lm_head_output: Tensor = model.lm_head(model_output[0])
 #      broken up into multiple tokens!)
 #    - vocab_size is the number of possible tokens in the tokeniser's vocabulary (i.e., all the tokens it knows about
 #      and can use!).
-print("Got LM Head output - shape is: " + str(lm_head_output.shape))
+print("\nLM Head shape is: " + str(lm_head_output.shape))
 
 # Get the logits (unnormalized scores) for the last token in the sequence
 last_tensor = lm_head_output[0, -1]  # Batch 0, last token. Shape will be [32064]
@@ -96,12 +97,12 @@ last_tensor = lm_head_output[0, -1]  # Batch 0, last token. Shape will be [32064
 #         `token_id = lm_head_output[0,-1].argmax(-1)`
 #       But I've broken it up into steps for simplicity.
 token_id = last_tensor.argmax()
-print("The most probably next token has ID: " + str(token_id))
+print("\nThe most probably next token has ID: " + str(token_id))
 
 # Decode the token ID into an actual string
 token_string: str = tokenizer.decode(token_id)
 
-print("From our prompt: " + prompt)
+print("\nFrom our prompt: " + prompt)
 print("We get the response: " + token_string)
 
 # Just for fun, we'll take a look at the next few candidate tokens which we might have chosen
@@ -114,7 +115,7 @@ top_logits, top_token_ids = topk(last_tensor, k=next_most_likely_count)
 top_tokens = tokenizer.batch_decode(top_token_ids)
 
 # Print each token and its associated logit
-print(f"{'Rank':<5} {'Token ID':<10} {'Logit':<10} {'Token'}")
+print(f"\n{'Rank':<5} {'Token ID':<10} {'Logit':<10} {'Token'}")
 print("-" * 50)
 for i in range(next_most_likely_count):
     rank = i + 1
