@@ -20,8 +20,9 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 warmup_prompt = "Write me a love song about a bacon sandwich"
 song_input_ids = tokenizer(warmup_prompt, return_tensors="pt").input_ids.to("cuda")
 song_output_ids = model.generate(
-		input_ids=song_input_ids,
-		max_new_tokens=100)
+	input_ids=song_input_ids,
+	max_new_tokens=200
+)
 the_greatest_love_song_in_the_world_about_a_bacon_sandwich = tokenizer.decode(song_output_ids[0], skip_special_tokens=True)
 
 prompt = "Write a very long email apologizing to Princess Peach for the tragic gardening mishap. Explain how it happened."
@@ -56,21 +57,22 @@ def generate_text_without_cache() -> str:
 	)
 	return tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
-# Do the text generation and print out the timings.
-# Note: On my RTX 4090 I get about ~28 seconds for the caching run and ~46 seconds for the non-caching run for 1000 tokens.
+# Do the text generation and print out the timings (we'll print the output length too, just to make sure they equiv.).
+# Note: On my RTX 4090 I get about ~28 seconds for the caching run and ~45 seconds for the non-caching run w/ 1000 tokens.
+# Also: Caching generation takes around ~120W, while non-caching can hit ~180W and introduces some coil-whine on my setup!
 caching_text, duration_with_caching = time_execution_of(generate_text_with_cache)
-print(f"Generation time WITH    cache: {duration_with_caching:.4f} seconds.")
+print(f"Generation time WITH    cache: {duration_with_caching:.4f} seconds. Caching text length: {len(caching_text)}.")
 noncaching_text, duration_without_caching = time_execution_of(generate_text_without_cache)
-print(f"Generation time WITHOUT cache: {duration_without_caching:.4f} seconds.")
+print(f"Generation time WITHOUT cache: {duration_without_caching:.4f} seconds. Non-caching text length: {len(noncaching_text)}.")
 
 def remove_blank_lines(text: str) -> str:
 	return "\n".join(line for line in text.splitlines() if line.strip())
 
 # Print the text we generated, just so we know & can prove we actually did some work!
 print_char_count = 300
-print("\nCache text is: " + remove_blank_lines(caching_text)[:print_char_count])
+print(f"\nCache text is: {remove_blank_lines(caching_text)[:print_char_count]}")
 print("=" * 100)
-print("\nNon-cache text is: " + remove_blank_lines(noncaching_text)[:print_char_count])
+print(f"\nNon-cache text is: {remove_blank_lines(noncaching_text)[:print_char_count]}")
 
 # Just for lolz
 print("=" * 100)

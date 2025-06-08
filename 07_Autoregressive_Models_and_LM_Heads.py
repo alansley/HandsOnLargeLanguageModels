@@ -72,7 +72,7 @@ input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
 # From p82: "The answer is that the final calculations of the previous streams are required and used in calculating
 # the FINAL stream" (that goes into the LM Head).
 model_output = model.model(input_ids)
-print("\nModel output shape is: " + str(model_output[0].shape))
+print(f"\nModel output shape is: {model_output[0].shape}")
 
 # Pass the hidden states through the LM head to get "logits".
 # Note: "logits" are the probability SCORES - but they are not the ACTUAL probabilities like "70% chance" or something.
@@ -86,7 +86,7 @@ lm_head_output: Tensor = model.lm_head(model_output[0])
 #      broken up into multiple tokens!)
 #    - vocab_size is the number of possible tokens in the tokeniser's vocabulary (i.e., all the tokens it knows about
 #      and can use!).
-print("\nLM Head shape is: " + str(lm_head_output.shape))
+print(f"\nLM Head shape is: {lm_head_output.shape}")
 
 # Get the logits (unnormalized scores) for the last token in the sequence
 last_tensor = lm_head_output[0, -1]  # Batch 0, last token. Shape will be [32064]
@@ -97,13 +97,13 @@ last_tensor = lm_head_output[0, -1]  # Batch 0, last token. Shape will be [32064
 #         `token_id = lm_head_output[0,-1].argmax(-1)`
 #       But I've broken it up into steps for simplicity.
 token_id = last_tensor.argmax()
-print("\nThe most probably next token has ID: " + str(token_id))
+print(f"\nThe most probably next token has ID: {token_id}")
 
 # Decode the token ID into an actual string
 token_string: str = tokenizer.decode(token_id)
 
-print("\nFrom our prompt: " + prompt)
-print("We get the response: " + token_string)
+print(f"\nFrom our prompt: {prompt}")
+print(f"We get the response: {token_string}")
 
 # Just for fun, we'll take a look at the next few candidate tokens which we might have chosen
 next_most_likely_count = 4
@@ -115,11 +115,11 @@ top_logits, top_token_ids = topk(last_tensor, k=next_most_likely_count)
 top_tokens = tokenizer.batch_decode(top_token_ids)
 
 # Print each token and its associated logit
-print(f"\n{'Rank':<5} {'Token ID':<10} {'Logit':<10} {'Token'}")
-print("-" * 50)
+print(f"\n{'Rank':<5} | {'Token ID':<10} | {'Logit':<10} | Token")
+print("-" * 54)
 for i in range(next_most_likely_count):
     rank = i + 1
     token_id = top_token_ids[i].item()
     logit = top_logits[i].item()
-    token = repr(top_tokens[i])  # Use repr() to make whitespace and special chars visible
-    print(f"{rank:<5} {token_id:<10} {logit:<10.4f} {token}")
+    token = repr(top_tokens[i])  # Use repr() to show whitespace and special characters clearly
+    print(f"{rank:<5} | {token_id:<10} | {logit:<10.4f} | {token}")

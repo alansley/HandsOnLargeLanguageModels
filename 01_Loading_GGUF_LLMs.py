@@ -1,10 +1,6 @@
-# ACL 2025-06-05
-# Note: This code is configured to work with Python 3.11 on initial write.
-# Also: We needed to run `pip install accelerate` to be able to set "cuda" as the device map,
-# Finally: We needed to run `pip install gguf` to be able to load GGUF models!
+# Note: We need the `gguf` package to load GGUFs - but they're super slow to load so we'll stick with SafeTensors or
+# such for the rest of the code.
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-
-# IMPORTANT: While smaller than SafeTensors, GGUF files take a long time to load - like, 1-2 mins for output!
 
 # To use GGUF format models we need to specify the model and the quant
 model_id       = "bartowski/Phi-3.1-mini-4k-instruct-GGUF"
@@ -17,11 +13,8 @@ model = AutoModelForCausalLM.from_pretrained(
 	gguf_file=model_filename,
 	device_map="cuda",
 	torch_dtype="auto",
-
-	# Note: This NEEDS to be false for Phi-3 models as they're a bit old and the transformers module has some mismatches with them
-	trust_remote_code=False,
-
-	attn_implementation="eager"  # Note: "flash_attention_2" doesn't work with this model
+	trust_remote_code=False,     # Note: This needs to be false for Phi-3 models as they're a bit old
+	attn_implementation="eager"  # Also: "flash_attention_2" doesn't work with this particular model
 )
 
 # Print some details regarding how it'll generate responses

@@ -3,20 +3,16 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 # For typical model loading without specifying a quant you can just use something like this:
+# Note: For a Phi 3.5 model try: "microsoft/Phi-3.5-mini-instruct"
 model_name: str = "microsoft/Phi-3-mini-4k-instruct"
-#model_name: str = "microsoft/Phi-3.5-mini-instruct"
 
 # Load our model
-# Note: We cannot use "flash_attention" for the attn_implementation argument here!
 model = AutoModelForCausalLM.from_pretrained(
 	pretrained_model_name_or_path=model_name,
 	device_map="cuda",
 	torch_dtype="auto",
-
-	# Note: This NEEDS to be false for Phi-3 models as they're a bit old and the transformers module has some mismatches with them
-	trust_remote_code=False,
-
-	attn_implementation="flash_attention_2"  # Can just use "eager" if we don't want to use flash attention
+	trust_remote_code=False,                 # Note: This needs to be false for Phi-3 models as they're a bit old
+	attn_implementation="flash_attention_2"  # We can just use "eager" if we don't want to use flash attention
 )
 
 # Print some details regarding how it'll generate responses

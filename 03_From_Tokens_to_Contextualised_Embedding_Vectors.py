@@ -36,8 +36,8 @@ tokens = tokenizer(input_txt, return_tensors='pt')
 #       - Another way to think of this is that the 384 (in this case) values represent the token's meaning IN CONTEXT in
 #       384 dimensional space!
 tokenized_output = model(**tokens)[0]
-print("--- The shape of the tokenized output is: " + str(tokenized_output.shape))
-print("--- Values are:")
+print("\n--- The shape of the tokenized output is: " + str(tokenized_output.shape))
+print("\n--- Values are:")
 print(tokenized_output)
 
 # Decode & print the output.
@@ -48,7 +48,7 @@ print(tokenized_output)
 #  World   <-- 3 - Notice the space before the word "World" - so this means " World" is its own separate token! Almost - see below - it's a `Ġ`!
 # [SEP]    <-- 4 - "[SEP]" just marks the end of a string or sentence
 #
-print("--- Decoded tokenized output is:")
+print("\n--- Decoded tokenized output is:")
 for token in tokens['input_ids'][0]:
 	decoded_token = tokenizer.decode(token)
 	print(decoded_token)
@@ -61,7 +61,7 @@ for token in tokens['input_ids'][0]:
 # Hello
 # ĠWorld    <-- Notice how there isn't a SPACE before "World" now, it's a `Ġ` character, which indicates a leading space!
 # [SEP]
-print("--- Tokens with actual symbol embedding (look at the \"World\" line):")
+print("\n--- Tokens with actual symbol embedding (look at the \"World\" line):")
 tokens_as_strings = tokenizer.convert_ids_to_tokens(tokens['input_ids'][0])
 for token in tokens_as_strings:
 	print(token)
@@ -91,8 +91,8 @@ print(f"\nWhen providing multiple (2 in this case) inputs, the shape of the outp
 # Output:
 # Decoded tokens per input:
 # Input 1: ['[CLS]', 'Hello', 'ĠWorld', '[SEP]', '[PAD]']       <-- The [PAD] token here ensures each array is of the same size (5) in this example
-# Input 2: ['[CLS]', 'Good', 'bye', 'ĠMoon', '[SEP]']
-print("\nDecoded tokens per input:")
+# Input 2: ['[CLS]', 'Good',  'bye',    'ĠMoon', '[SEP]']
+print("\nDecoded tokens per input (note the padding token at the end of Input 1 so we don't have a jagged array!):")
 for i, input_ids in enumerate(tokens['input_ids']):
 	token_strs = tokenizer.convert_ids_to_tokens(input_ids)
 	print(f"Input {i + 1}: {token_strs}")
@@ -116,6 +116,6 @@ print("The total number of layers in our tokenizer/transformer are: " + str(len(
 penultimate_layer_output = hidden_states[-2]
 
 print("\n--- Looking at the PENULTIMATE layer, the shape of the tokenized output is: " + str(penultimate_layer_output.shape))
-print("--- Values in the PENULTIMATE layer are:")
+print("\n--- Values in the PENULTIMATE layer are:")
 print("(Compare these to the original outputs above for \"Hello World\" - there aren't even close to being the same!)")
 print(penultimate_layer_output)

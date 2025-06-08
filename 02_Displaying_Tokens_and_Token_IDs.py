@@ -21,11 +21,11 @@ print("--- Our prompt is: " + prompt)
 # token (character, word, or part of a word) - and each ID references a table inside the tokenizer containing all the
 # tokens it knows about!
 input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
-print("--- But the model doesn't see our text input! It sees:")
+print("\n--- But the model doesn't see our text input! It sees:")
 print(input_ids)
 
 # But, we can DECODE the IDs back into text if we want to see how they map
-print("--- Decoding these IDs back into the text for each token gives us:")
+print("\n--- Decoding these IDs back into the text for each token gives us:")
 for input_id in input_ids[0]:
 	decoded_input_id = tokenizer.decode(input_id)
 	print(str(input_id) + "\t- " + decoded_input_id)
@@ -37,11 +37,11 @@ generated_output = model.generate(
 )
 
 # Print the output (as text)
-print("--- The text of our output response is: ")
+print("\n--- The text of our output response is: ")
 print(tokenizer.decode(generated_output[0]))
 
 # But really, what we received was more integers which map to tokens!
-print("--- But the model didn't respond with text - it responded with TOKENS!:")
+print("\n--- But the model didn't respond with text - it responded with TOKENS!:")
 for output_id in generated_output[0]:
 	decoded_output_id = tokenizer.decode(output_id)
 	print(str(output_id) + "\t- " + decoded_output_id)
@@ -52,7 +52,7 @@ for output_id in generated_output[0]:
 #   tensor(29873, device='cuda:0')	- t
 # So really, it gets put together like this:
 dont_tokens = [1016, 29915, 29873]
-print("--- The word \"don't\" gets built from tokens 1016, 29915 & 29873 to become: " + tokenizer.decode(dont_tokens))
+print(f"\n--- The word \"don't\" gets built from tokens 1016, 29915 & 29873 to become: {tokenizer.decode(dont_tokens)}")
 
 # Also: There are three major factors that dictate how a tokenizer breaks down an input prompt.
 #
