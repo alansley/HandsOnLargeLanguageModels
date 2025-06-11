@@ -1,5 +1,6 @@
 # Note: This code is configured to work with Python 3.11 on initial write.
 # Also: We needed to run `pip install accelerate` to be able to set "cuda" as the device map
+import gc
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 # For typical model loading without specifying a quant you can just use something like this:
@@ -48,3 +49,6 @@ messages = [
 # Generate and print the output!
 output = generator(messages)
 print(output[0][GENERATED_TEXT_FIELD_NAME])
+
+# Clean up
+gc.collect()

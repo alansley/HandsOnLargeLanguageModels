@@ -1,5 +1,6 @@
+import gc
 import time
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 model_name: str = "microsoft/Phi-3-mini-4k-instruct"
 
@@ -77,3 +78,5 @@ print(f"\nNon-cache text is: {remove_blank_lines(noncaching_text)[:print_char_co
 # Just for lolz
 print("=" * 100)
 print(the_greatest_love_song_in_the_world_about_a_bacon_sandwich)
+
+gc.collect()

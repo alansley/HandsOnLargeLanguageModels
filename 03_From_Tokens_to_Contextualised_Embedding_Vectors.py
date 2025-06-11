@@ -1,3 +1,4 @@
+import gc
 from transformers import AutoModel, AutoTokenizer
 
 # Load a language model - in this case we'll pick one that can work with the DeBERTa tokenizer
@@ -119,3 +120,6 @@ print("\n--- Looking at the PENULTIMATE layer, the shape of the tokenized output
 print("\n--- Values in the PENULTIMATE layer are:")
 print("(Compare these to the original outputs above for \"Hello World\" - there aren't even close to being the same!)")
 print(penultimate_layer_output)
+
+# Clean up
+gc.collect()

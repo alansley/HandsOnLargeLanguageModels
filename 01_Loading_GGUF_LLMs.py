@@ -1,5 +1,6 @@
 # Note: We need the `gguf` package to load GGUFs - but they're super slow to load so we'll stick with SafeTensors or
 # such for the rest of the code.
+import gc
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 # To use GGUF format models we need to specify the model and the quant
@@ -50,3 +51,6 @@ messages = [
 # Generate and print the output!
 output = generator(messages)
 print(output[0][GENERATED_TEXT_FIELD_NAME])
+
+# Clean up
+gc.collect()

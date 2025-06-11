@@ -1,3 +1,4 @@
+import gc
 import gensim.downloader as api
 
 # Download embeddings (66MB, glove, trained on wikipedia, vector size: 50)
@@ -17,3 +18,6 @@ print(f"{'Word':<15} | Similarity")
 print("-" * 30)
 for word, similarity_score in most_similar_words:
     print(f"{word:<15} | {similarity_score:.4f}")
+
+# Clean up
+gc.collect()

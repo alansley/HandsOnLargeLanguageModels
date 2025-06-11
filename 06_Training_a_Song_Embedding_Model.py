@@ -2,6 +2,7 @@
 # song" - so it's like the word-similarity we just looked at, but we'll train it ourselves from a list of playlists
 # each containing a list of songs (so each song is like a word in a sentence, and the playlist itself is the sentence!)
 
+import gc
 import os
 import pandas as pd
 from urllib import request
@@ -93,3 +94,6 @@ for similar_song_id, similar_song_score in most_similar_songs:
     title_str  = parts[2].split(': ')[1]
 
     print(f"{id_str:<6} | {artist_str:<20} | {title_str:<30} | {similar_song_score:10.6f}")
+
+# Clean up
+gc.collect()

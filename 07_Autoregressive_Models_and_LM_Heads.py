@@ -1,4 +1,5 @@
-from torch import Tensor, topk
+import gc
+from torch import Tensor, topk, cuda
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 model_name: str = "microsoft/Phi-3-mini-4k-instruct"
@@ -123,3 +124,7 @@ for i in range(next_most_likely_count):
     logit = top_logits[i].item()
     token = repr(top_tokens[i])  # Use repr() to show whitespace and special characters clearly
     print(f"{rank:<5} | {token_id:<10} | {logit:<10.4f} | {token}")
+
+# Clean up
+cuda.empty_cache()
+gc.collect()

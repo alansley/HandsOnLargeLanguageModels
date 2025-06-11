@@ -1,3 +1,4 @@
+import gc
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 model_name: str = "microsoft/Phi-3-mini-4k-instruct"
@@ -53,6 +54,9 @@ for output_id in generated_output[0]:
 # So really, it gets put together like this:
 dont_tokens = [1016, 29915, 29873]
 print(f"\n--- The word \"don't\" gets built from tokens 1016, 29915 & 29873 to become: {tokenizer.decode(dont_tokens)}")
+
+# Clean up
+gc.collect()
 
 # Also: There are three major factors that dictate how a tokenizer breaks down an input prompt.
 #

@@ -1,6 +1,7 @@
-import torch
-from torch import Tensor, softmax, no_grad
+import gc
+from torch import Tensor, softmax, no_grad, cuda, topk
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from torch.nn.functional import cosine_similarity
 
 model_name: str = "microsoft/Phi-3-mini-4k-instruct"
 
@@ -23,8 +24,8 @@ generator = pipeline(
 	tokenizer=tokenizer,
 	return_full_text=False,  # If true the model will return the prompt it was given PLUS the response
 	max_new_tokens=50,       # Limit to a short response
-	do_sample=False,          # If this is False we'll just pick the most probable next token for output, which will result in the same output every run!
-	#temperature=0.9          # Temperature will be applied (0..1 -> min..max creativity) ONLY if `do_sample` is True - if it's False this has no effect!
+	do_sample=False,         # If this is False we'll just pick the most probable next token for output, which will result in the same output every run!
+	#temperature=0.9         # Temperature will be applied (0..1 -> min..max creativity) ONLY if `do_sample` is True - if it's False this has no effect!
 )
 
 prompt = "The dog chased the squirrel because it"
@@ -38,26 +39,30 @@ inputs: dict[str, Tensor] = tokenizer(prompt, return_tensors="pt").to("cuda")
 #   ctx = torch.no_grad()
 #   ctx.__enter__()
 #   try:
-#         outputs = model(**inputs)
+#         outputs = model(**inputs, output_hidden_states=True)
 #   finally:
 #         ctx.__exit__(None, None, None)
 #
-# Because Python's gonna Python...
 with no_grad():
-    outputs = model(**inputs)
+    outputs = model(**inputs, output_hidden_states=True)
+
+# Hidden states is a tuple: (layer_0, layer_1, ..., layer_n)
+# Each hidden state tensor has shape: [batch_size, seq_len, hidden_dim]
+# We'll use the **last layer** hidden state
+hidden_states = outputs.hidden_states[-1][0]  # shape: [seq_len, hidden_dim]
 
 # Get the logits for the **next token**
-logits: torch.Tensor = outputs.logits  # shape: [batch, sequence_length, vocab_size]
-next_token_logits = logits[0, -1]  # Get the logits for the last token
+logits: Tensor = outputs.logits     # shape: [batch, sequence_length, vocab_size]
+next_token_logits = logits[0, -1]   # Get the logits for the last token
 
 # Convert logits to probabilities
 probs = softmax(next_token_logits, dim=0)
 
-# Show top 20 predicted tokens
+# Show top however many predicted tokens
 top_k = 5
-top_probs, top_indices = torch.topk(probs, top_k)
+top_probs, top_indices = topk(probs, top_k)
 
-print(f"\nPrompt: {prompt!r}\n")
+print(f"\n--- What are the most likely next tokens in the prompt: {prompt}")
 print(f"{'Rank':<5} {'Token ID':<10} {'Prob (%)':<10} {'Token'}")
 print("-" * 50)
 for i in range(top_k):
@@ -66,25 +71,35 @@ for i in range(top_k):
     token_str = repr(tokenizer.decode([token_id]))  # Use repr to show special chars
     print(f"{i+1:<5} {token_id:<10} {prob:<10.2f} {token_str}")
 
-def get_log_prob_of_continuation(text):
-    #inputs = tokenizer(text, return_tensors="pt").to("cuda")
-    #with torch.no_grad():
-    #    outputs = model(**inputs)
-    #logits = outputs.logits
+# --- Okay, now let's find out if "it" is more likely to mean the dog or the squirrel...
 
-    # Calculate log probabilities of the last generated token
-    # We want to score the last token only (to see likelihood of that word after the prefix)
-    #last_token_id = inputs.input_ids[0, -1]
-    last_token_id = inputs["input_ids"][0, -1]
-    last_token_logits = logits[0, -2]  # logits at second last position correspond to next token
-    log_probs = torch.nn.functional.log_softmax(last_token_logits, dim=-1)
-    return log_probs[last_token_id].item()
+# Map token IDs to string tokens for context
+input_ids = inputs["input_ids"][0]
+tokens = tokenizer.convert_ids_to_tokens(input_ids)
 
-text1 = "The dog chased the squirrel because the dog was"
-text2 = "The dog chased the squirrel because the squirrel was"
+# Debug print: Print out the list of tokens in the prompt
+print("\n--- Token breakdown is:")
+for i, tok in enumerate(tokens):
+    print(f"{i:2}: {tok}")
 
-log_prob1 = get_log_prob_of_continuation(text1)
-log_prob2 = get_log_prob_of_continuation(text2)
+# Indices based on your token printout
+idx_dog = 1                # 'dog' is a single token...
+idxs_squirrel = [5, 6, 7]  # ...but 'squirrel' is made up from tokens [5,6,7] ("squ", "ir", and "rel")...
+idx_it = 9                 # ...and 'it' is a single token.
 
-print(f"Log prob for 'dog was': {log_prob1}")
-print(f"Log prob for 'squirrel was': {log_prob2}")
+# Get embeddings
+emb_dog      = hidden_states[idx_dog]
+emb_squirrel = hidden_states[idxs_squirrel].mean(dim=0) # As "squirrel" is 3 tokens we have to average their embedding values!
+emb_it       = hidden_states[idx_it]
+
+# Now use cosine similarities to compare the embedding value of 'it' to both 'dog' and 'squirrel'
+sim_dog      = cosine_similarity(emb_it, emb_dog, dim=0).item()
+sim_squirrel = cosine_similarity(emb_it, emb_squirrel, dim=0).item()
+
+print(f"\nCosine similarity between 'it' and 'dog' in this context: {sim_dog:.4f}")
+print(f"Cosine similarity between 'it' and 'squirrel' in this context: {sim_squirrel:.4f}")
+print("As such, 'it' is more likely referring to:", "dog" if sim_dog > sim_squirrel else "squirrel")
+
+# Clean up
+cuda.empty_cache()
+gc.collect()
