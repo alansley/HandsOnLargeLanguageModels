@@ -43,9 +43,12 @@ with torch.no_grad():
     outputs = model(**inputs, output_attentions=True, output_hidden_states=True)
 
 # Access attention details & confirm the model config details are correct
+# Note: The `numel()` counts the NUMber of ELements in an array or tensor! So data like [[1,1,1], [2,2,2]] would have a
+# `numel` value of 6 as its shape is [2, 3] and 2 x 3 = 6.
 attn_weights = outputs.attentions
 num_attention_layers = len(attn_weights)
-print(f"\n--- Confirming model: {model_name} has {num_attention_layers} attention layers")
+model_parameter_count = sum(p.numel() for p in model.parameters())
+print(f"\n--- Confirming model: {model_name} has {num_attention_layers} attention layers and {model_parameter_count:,} parameters")
 
 # Grab shape info from the first layer (we'll assume all layers have the same shape)
 batch_size, num_heads, seq_len_q, seq_len_k = attn_weights[0].shape
@@ -56,8 +59,20 @@ print(f"Number of attention heads: {num_heads}")  # GPT2 uses 12 layers for atte
 print(f"Sequence length (query): {seq_len_q}")    # The query matrix sequence length is 7 as that's the length of our prompt
 print(f"Sequence length (key): {seq_len_k}")      # Same for our key matrix, it'll be 7 to match the length of our prompt
 
-# Inspect a specific head's attention.
+# Inspect a specific head's attention details.
+#
 # Note: Because our prompt has 7 tokens this is a 7x7 tensor - if our prompt was a different length these dimensions would change!
+#
+# Also: The relationship between the LM Head and each layer's Attention Heads is:
+#
+# LM Head	                                | Attention Heads
+# ------------------------------------------------------------------------------------------
+# Comes after all attention layers	        | Are within each transformer layer
+# Maps final hidden states to vocabulary	| Map input tokens to context-aware representations
+# Only one LM head	                        | Multiple attention heads per layer
+#
+# So they’re sequentially connected: attention heads → hidden states → LM head.
+# The LM head consumes the output of all the attention processing, but it does not participate in attention itself.#
 layer, head = 0, 0
 print("\n---Attention weights (layer 0, head 0) are:")
 print(attn_weights[layer][0, head])  # Shape: [seq_len, seq_len]
