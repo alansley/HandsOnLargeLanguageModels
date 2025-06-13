@@ -13,6 +13,10 @@ from transformers import  AutoModelForCausalLM, AutoTokenizer
 # its own set of key, query, and value projections. Newer variants include:
 #   - "Multi-query Attention": uses a single key and value projection shared across all heads (reduces memory and improves speed).
 #   - "Grouped-query Attention": uses fewer key and value projections than the number of heads by grouping heads to share them.
+#
+# Also: Attention is really about two main things:
+#   - Scoring relevance between tokens, and
+#   - Combining information.
 model_name = "gpt2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
@@ -113,12 +117,12 @@ print(f"\n--- Similarity between 'dog' and 'it' is: {similarity.item():.4f}")  #
 
 # ----- Visualize attention for layers and heads -----
 
-# NOTE: I thought this would show a high correlation between `dog` and `it - but it DOES NOT! This is because attention
-# is not an explanation, nor is it the final word on what the model "thinks"!
+# NOTE: I thought this visualisation of the attention details would show a high correlation between `dog` and `it - but
+# IT DOES NOT! This is because attention is not an explanation, nor is it the final word on what the model "thinks"!
 #
 # Instead:
-# - Attention tells us which tokens the model focuses on when processing another token!,
-
+# - Attention tells us which tokens the model focuses on when processing another token!
+#
 # - When we see the high correlation between 'dog' and 'it, we're looking at the output of the last hidden state layer,
 #   which has gone through:
 #      - All 12 layers,
