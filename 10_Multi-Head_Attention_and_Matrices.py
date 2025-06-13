@@ -7,7 +7,12 @@ from torch import Tensor
 from torch.nn.functional import cosine_similarity
 from transformers import  AutoModelForCausalLM, AutoTokenizer
 
-# Phi-3 models aren't keen on giving up their attention details so we'll use GPT2
+# Phi-3 models aren't keen on giving up their attention details so we'll use GPT2.
+#
+# Note: The original attention mechanism (which we're looking at here) is called "Multi-head Attention" – each head has
+# its own set of key, query, and value projections. Newer variants include:
+#   - "Multi-query Attention": uses a single key and value projection shared across all heads (reduces memory and improves speed).
+#   - "Grouped-query Attention": uses fewer key and value projections than the number of heads by grouping heads to share them.
 model_name = "gpt2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
