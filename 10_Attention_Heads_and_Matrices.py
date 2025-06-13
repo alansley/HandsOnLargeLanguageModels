@@ -1,15 +1,13 @@
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import matplotlib.gridspec
-
 import seaborn as sns
-
 import torch
 from torch import Tensor
 from torch.nn.functional import cosine_similarity
-
 from transformers import  AutoModelForCausalLM, AutoTokenizer
 
+# Phi-3 models aren't keen on giving up their attention details so we'll use GPT2
 model_name = "gpt2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
@@ -21,9 +19,9 @@ model = AutoModelForCausalLM.from_pretrained(
     attn_implementation="eager"  # We cannot use "flash_attention_2" when we want to see the attention vectors!
 )
 
-print(f"\n---Using model: {model_name} - which reports:")
-print(f"Model layers: {model.config.n_layer}")
-print(f"Model heads: {model.config.n_head}")
+print(f"\n---Using model: {model_name} - which reports that it has:")
+print(f"Model transformer layers: {model.config.n_layer}")
+print(f"Model attention heads per layer: {model.config.n_head}")
 print(f"Hidden size: {model.config.hidden_size}")
 
 # Switch the model to EVALUATION mode so we do not drop values (from the `Dropout` layer, apparently) and "only use
@@ -33,17 +31,21 @@ model.eval()
 prompt = "The dog chased the squirrel because it"
 print(f"\n--- Prompt is: {prompt}")
 
-# Tokenise our prompt
+# Tokenise our prompt to get the token IDs...
 inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
 
+# ...then get what each token actually is.
+tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
+
 # Generate outputs INCLUDING the attentions and hidden states!
+# Note: Each attention head contains three projection matrices for queries, keys, and values.
 with torch.no_grad():
     outputs = model(**inputs, output_attentions=True, output_hidden_states=True)
 
-# Access attention
+# Access attention details & confirm the model config details are correct
 attn_weights = outputs.attentions
 num_attention_layers = len(attn_weights)
-print(f"\n--- Model {model_name} has this many attention layers: {num_attention_layers}")
+print(f"\n--- Confirming model: {model_name} has {num_attention_layers} attention layers")
 
 # Grab shape info from the first layer (we'll assume all layers have the same shape)
 batch_size, num_heads, seq_len_q, seq_len_k = attn_weights[0].shape
@@ -54,14 +56,14 @@ print(f"Number of attention heads: {num_heads}")  # GPT2 uses 12 layers for atte
 print(f"Sequence length (query): {seq_len_q}")    # The query matrix sequence length is 7 as that's the length of our prompt
 print(f"Sequence length (key): {seq_len_k}")      # Same for our key matrix, it'll be 7 to match the length of our prompt
 
-# Inspect a specific head's attention
+# Inspect a specific head's attention.
+# Note: Because our prompt has 7 tokens this is a 7x7 tensor - if our prompt was a different length these dimensions would change!
 layer, head = 0, 0
 print("\n---Attention weights (layer 0, head 0) are:")
 print(attn_weights[layer][0, head])  # Shape: [seq_len, seq_len]
 
 # Access hidden states for 'it' vs 'dog' comparison
 hidden_states = outputs.hidden_states[-1][0]
-tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
 
 # Grab the token indices from a word.
 # Note: The GPT2 tokenizer uses Ġ for space, so if we try to look up `dog` we might fail if it's `Ġdog` (e.g., with a space before it)
