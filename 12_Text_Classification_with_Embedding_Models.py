@@ -1,10 +1,8 @@
 import os
 from datasets import load_dataset
-import numpy as np
+from sentence_transformers import SentenceTransformer
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
-from tqdm import tqdm
-from transformers import pipeline
-from transformers.pipelines.pt_utils import KeyDataset
 
 # Load our data via HuggingFace's `datasets` library. In this case it's an equal number of positive and negative movie
 # reviews (I'm seeing 4,265 of each). Src: https://huggingface.co/datasets/cornell-movie-review-data/rotten_tomatoes
@@ -57,35 +55,32 @@ print(f"\n--- To be specific, we have {positive_count} positive reviews and {neg
 first_review = reviews[0]
 print(f"\n--- First review: {first_review}")
 
-# Path to our HF model
-model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+# Load model.
+# Note: We do NOT modify the embeddings in this embedding model - they are FROZEN at the values derived when this model was trained!
+model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
-# Load model into pipeline
-pipe = pipeline(
-	model=model_path,
-	tokenizer=model_path,
-	return_all_scores=True,
-	device="cuda:0"
-)
+# Convert our movie review text to embeddings
+train_embeddings = model.encode(data["train"]["text"], show_progress_bar=True)
+test_embeddings  = model.encode(data["test"]["text"], show_progress_bar=True)
 
-# Run inference on the "test" split of our movie review dataset
-y_prediction = []
-test_split_of_dataset = KeyDataset(data["test"], key="text")
-for output in tqdm(pipe(test_split_of_dataset), total=len(data["test"])):
-	negative_score = output[0]["score"]
-	positive_score = output[2]["score"]
-	assignment = np.argmax([negative_score, positive_score])
-	y_prediction.append(assignment)
+# Our embeddings for the `train` split of our dataset will be of size (8530, 768) - this tells us that for each movie
+# review in our dataset (there are 8,530) we have generated a 768 value tensor describing its embedding value / meaning.
+print(f"\n--- Train embeddings shape is: {train_embeddings.shape}")  #
 
-# Now that we have generated our predictions, all that is left is evaluation. We create a small function that we can
-# easily use throughout this chapter:
+# Train a logistic regression on our train embeddings
+clf = LogisticRegression(random_state=42)
+clf.fit(train_embeddings, data["train"]["label"])
+
+# Next, let’s evaluate our model, i.e., predict previously unseen instances
+y_predictions = clf.predict(test_embeddings)
 
 def evaluate_performance(y_true, y_pred):
 	"""Create and print the classification report"""
 	performance = classification_report(y_true, y_pred, target_names=["Negative Review", "Positive Review"])
-	print(f"\n--- Performance results:\n\n{performance}")
+	print(f"\n--- Performance results:\n{performance}")
 
-evaluate_performance(data["test"]["label"], y_prediction)
+# Evaluate the model's ability to classify positive and negative movie reviews
+evaluate_performance(data["test"]["label"], y_predictions)
 
 # When evaluating our performance of classifying a movie review, there are 4 possible outcomes:
 #   - TRUE POSITIVE  (TP) - The movie review is positive and we correctly classified it as positive,
@@ -97,12 +92,12 @@ evaluate_performance(data["test"]["label"], y_prediction)
 #
 #                  precision    recall  f1-score   support
 #
-# Negative Review       0.76      0.88      0.81       533
-# Positive Review       0.86      0.72      0.78       533
+# Negative Review       0.85      0.86      0.85       533
+# Positive Review       0.86      0.85      0.85       533
 #
-#        accuracy                           0.80      1066
-#       macro avg       0.81      0.80      0.80      1066
-#    weighted avg       0.81      0.80      0.80      1066
+#        accuracy                           0.85      1066
+#       macro avg       0.85      0.85      0.85      1066
+#    weighted avg       0.85      0.85      0.85      1066
 #
 # So what does this all mean?:
 #   - Precision measures how many of the items found are relevant, which indicates the accuracy of the relevant results.
@@ -111,8 +106,5 @@ evaluate_performance(data["test"]["label"], y_prediction)
 #     overall correctness of the model, and the
 #   - F1 Score balances both precision and recall to create a model's overall performance.
 #
-# Apparently, an F1 Score 0.81 is a pretty good classification result for a model not specifically trained on the domain
-# data.
-#
-# See p119-p121 for more details - honestly, I don't feel this is particularly well explained - but with any luck it'll
-# make more sense later.
+# Using our representation model we got a F1-Score of 0.81 (which is good), but using this embedding model we get an F1
+# score of 0.85, which is even better!
