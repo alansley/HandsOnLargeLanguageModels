@@ -65,7 +65,9 @@ model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 test_embeddings  = model.encode(data["test"]["text"], show_progress_bar=True)
 
 # ...then create embeddings for the labels that we're going to zero-shot classify against.
-initial_label_embeddings = model.encode(["A negative review", "A positive review"])
+initial_labels = ["A negative review", "A positive review"]
+initial_label_embeddings = model.encode(initial_labels)
+print(f"\n--- Providing zero-shot classification labels of: {initial_labels}")
 
 def test_label_embeddings(label_embeddings):
 	# Now find the best matching label for each document via cosine similarity
@@ -115,7 +117,10 @@ test_label_embeddings(initial_label_embeddings)
 #
 # However, we can go even further and try to make the labels more focussed by adding the word "movie", then we can push
 # them out to their positive/negative extremes by adding the word "very" - so we get:
-adjusted_label_embeddings = model.encode(["A very negative movie review", "A very positive movie review"])
+adjusted_labels = ["A very negative movie review", "A very positive movie review"]
+adjusted_label_embeddings = model.encode(adjusted_labels)
+print(f"\n--- Now adjusting those labels to: {adjusted_labels}")
+
 test_label_embeddings(adjusted_label_embeddings)
 
 # With that done, we get an average F1 Score accuracy of 0.80 which MATCHES the representation model result (which was
