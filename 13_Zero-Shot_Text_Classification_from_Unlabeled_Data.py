@@ -65,18 +65,21 @@ model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 test_embeddings  = model.encode(data["test"]["text"], show_progress_bar=True)
 
 # ...then create embeddings for the labels that we're going to zero-shot classify against.
-label_embeddings = model.encode(["A negative movie review", "A positive movie review"])
+initial_label_embeddings = model.encode(["A negative review", "A positive review"])
 
-# Now find the best matching label for each document via cosine similarity
-sim_matrix = cosine_similarity(test_embeddings, label_embeddings)
-y_prediction = np.argmax(sim_matrix, axis=1)
+def test_label_embeddings(label_embeddings):
+	# Now find the best matching label for each document via cosine similarity
+	sim_matrix = cosine_similarity(test_embeddings, label_embeddings)
+	y_prediction = np.argmax(sim_matrix, axis=1)
 
-def evaluate_performance(y_true, y_pred):
-	"""Create and print the classification report"""
-	performance = classification_report(y_true, y_pred, target_names=["Negative Review", "Positive Review"])
-	print(f"\n--- Performance results:\n\n{performance}")
+	def evaluate_performance(y_true, y_pred):
+		"""Create and print the classification report"""
+		performance = classification_report(y_true, y_pred, target_names=["Negative Review", "Positive Review"])
+		print(f"\n--- Performance results:\n\n{performance}")
 
-evaluate_performance(data["test"]["label"], y_prediction)
+	evaluate_performance(data["test"]["label"], y_prediction)
+
+test_label_embeddings(initial_label_embeddings)
 
 # When evaluating our performance of classifying a movie review, there are 4 possible outcomes:
 #   - TRUE POSITIVE  (TP) - The movie review is positive and we correctly classified it as positive,
@@ -88,12 +91,12 @@ evaluate_performance(data["test"]["label"], y_prediction)
 #
 #                  precision    recall  f1-score   support
 #
-# Negative Review       0.83      0.76      0.79       533
-# Positive Review       0.78      0.85      0.81       533
+# Negative Review       0.78      0.77      0.78       533
+# Positive Review       0.77      0.79      0.78       533
 #
-#        accuracy                           0.80      1066
-#       macro avg       0.80      0.80      0.80      1066
-#    weighted avg       0.80      0.80      0.80      1066
+#        accuracy                           0.78      1066
+#       macro avg       0.78      0.78      0.78      1066
+#    weighted avg       0.78      0.78      0.78      1066
 #
 # So what does this all mean?:
 #   - Precision measures how many of the items found are relevant, which indicates the accuracy of the relevant results.
@@ -102,10 +105,30 @@ evaluate_performance(data["test"]["label"], y_prediction)
 #     overall correctness of the model, and the
 #   - F1 Score balances both precision and recall to create a model's overall performance.
 #
-# Using our zero-shot approach me MATCHED our F1 Score of the representation model's accuracy (0.80) - and we didn't
-# even use any of the labelled data! We just created reasonable labels ("A positive movie review" / "A negative movie
-# review") - then used the cosine similarity of the embedding values of those labels to the actual review text to
-# classify the movie reviews!
+# Using our zero-shot approach we got an F1 Score accuracy of 0.78 which ALMOST MATCHED the representation model's
+# accuracy (0.80) - and we didn't even use any of the labelled data! We just created reasonable labels ("A positive
+# review" / "A negative review") - then used the cosine similarity of the embedding values of those labels to the actual
+# review text embeddings to classify the data!
 #
-# We didn't do QUITE as well as the 0.85 accuracy we got when USING the labeled training data - but we still did really
-# well just my making two simple labels and comparing against their embeddings!
+# We didn't do QUITE as well as the 0.85 accuracy we got when USING the labeled training data via an embedding model -
+# but we still did really well just by making two simple labels and comparing against their embeddings!
+#
+# However, we can go even further and try to make the labels more focussed by adding the word "movie", then we can push
+# them out to their positive/negative extremes by adding the word "very" - so we get:
+adjusted_label_embeddings = model.encode(["A very negative movie review", "A very positive movie review"])
+test_label_embeddings(adjusted_label_embeddings)
+
+# With that done, we get an average F1 Score accuracy of 0.80 which MATCHES the representation model result (which was
+# USING the labeled training data - and actually BEATS IT by 0.01 on positive review accuracy) - and all this while we
+# were just zero-shot-ing it from the above two labels that we came up with ourselves! Nice! =D
+#
+# --- Performance results:
+#
+#                  precision    recall  f1-score   support
+#
+# Negative Review       0.86      0.73      0.79       533
+# Positive Review       0.76      0.88      0.82       533
+#
+#        accuracy                           0.80      1066
+#       macro avg       0.81      0.80      0.80      1066
+#    weighted avg       0.81      0.80      0.80      1066
