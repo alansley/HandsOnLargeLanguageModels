@@ -84,10 +84,10 @@ def test_label_embeddings(label_embeddings):
 test_label_embeddings(initial_label_embeddings)
 
 # When evaluating our performance of classifying a movie review, there are 4 possible outcomes:
-#   - TRUE POSITIVE  (TP) - The movie review is positive and we correctly classified it as positive,
-#   - FALSE POSITIVE (FP) - The movie review is negative but we incorrectly classified it as positive,
-#   - TRUE NEGATIVE  (TN) - The movie review is negative and we correctly classified it as negative, and
-#   - FALSE NEGATIVE (FN) - The movie review is positive but we incorrectly classified it as negative.
+#   - TRUE POSITIVE  (TP) - The movie review is positive - and we correctly classified it as positive,
+#   - FALSE POSITIVE (FP) - The movie review is negative - but we incorrectly classified it as positive,
+#   - TRUE NEGATIVE  (TN) - The movie review is negative - and we correctly classified it as negative, and
+#   - FALSE NEGATIVE (FN) - The movie review is positive - but we incorrectly classified it as negative.
 #
 # Running our `evaluate_performance` function will create a report like the following:
 #
