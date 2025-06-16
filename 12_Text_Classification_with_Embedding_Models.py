@@ -77,7 +77,7 @@ y_predictions = clf.predict(test_embeddings)
 def evaluate_performance(y_true, y_pred):
 	"""Create and print the classification report"""
 	performance = classification_report(y_true, y_pred, target_names=["Negative Review", "Positive Review"])
-	print(f"\n--- Performance results:\n{performance}")
+	print(f"\n--- Performance results:\n\n{performance}")
 
 # Evaluate the model's ability to classify positive and negative movie reviews
 evaluate_performance(data["test"]["label"], y_predictions)
@@ -106,5 +106,5 @@ evaluate_performance(data["test"]["label"], y_predictions)
 #     overall correctness of the model, and the
 #   - F1 Score balances both precision and recall to create a model's overall performance.
 #
-# Using our representation model we got a F1-Score of 0.81 (which is good), but using this embedding model we get an F1
+# Using our representation model we got a F1-Score of 0.80 (which is good), but using this embedding model we get an F1
 # score of 0.85, which is even better!
