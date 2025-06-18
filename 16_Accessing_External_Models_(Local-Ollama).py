@@ -3,7 +3,6 @@
 #
 # Note: I don't recomment using "phi3" for this - it doesn't listen to the prompt properly and keeps talking about why
 # it thinks what it thinks rather than just returning a 0 or 1.
-from typing import Any
 
 import requests
 from requests import Response
@@ -78,10 +77,12 @@ print_response_details()
 
 # Bonus negative review
 review = "Maybe don't name your musical 'Rent' if you don't even have a single song about leasing law, property management procedures, or net lease calculations. As a real estate professional I am very disappointed and feel I was misled."
+# noinspection PyRedeclaration
 response = classify_sentiment_with_ollama(review).strip()
 print_response_details()
 
 # IDK, just playing with funny reviews now...
 review = "It's this movie where Colin Farrell is in a phone booth, and someone calls the phone booth, and if he leaves the phone booth he'll get shot. I think it was called 'The phone that couldn't hang up'"
+# noinspection PyRedeclaration
 response = classify_sentiment_with_ollama(review).strip()
 print_response_details()

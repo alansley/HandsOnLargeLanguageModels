@@ -49,7 +49,7 @@ response = client.responses.create(
 
 # Make sure we got the 0 (negative) or 1 (positive) we were expecting
 if response.output_text != "0" and response.output_text != "1":
-    print(f"Model wasn't listening to our prompt properly - we expects 0/1 but got: {response.ouput_text}")
+    print(f"Model wasn't listening to our prompt properly - we expects 0/1 but got: {response.output_text}")
     quit(-2)
 
 # Show our result

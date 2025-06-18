@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 from matplotlib.widgets import Button
 import matplotlib.gridspec
 import seaborn as sns
@@ -141,9 +142,9 @@ current_head  = 11  # ...and of that layer we'll look at the last attention head
 
 # Create figure with GridSpec to manage layout
 fig = plt.figure(figsize=(8, 8))
-gridspec = matplotlib.gridspec.GridSpec(2, 2, height_ratios=[20, 1], width_ratios=[20, 1])
-ax_heatmap = plt.subplot(gridspec[0, 0])
-cbar_ax = plt.subplot(gridspec[0, 1])
+gridspec: GridSpec = matplotlib.gridspec.GridSpec(2, 2, height_ratios=[20, 1], width_ratios=[20, 1])
+ax_heatmap = plt.subplot(kwargs=gridspec[0, 0])
+cbar_ax = plt.subplot(kwargs=gridspec[0, 1])
 
 plt.subplots_adjust(bottom=0.2)
 
@@ -206,10 +207,10 @@ def next_head(event):
     plot_attention_layer(current_layer)
 
 # Button locations
-ax_prev_layer = plt.axes([0.15, 0.15, 0.15, 0.075])
-ax_next_layer = plt.axes([0.32, 0.15, 0.15, 0.075])
-ax_prev_head  = plt.axes([0.49, 0.15, 0.15, 0.075])
-ax_next_head  = plt.axes([0.66, 0.15, 0.15, 0.075])
+ax_prev_layer = plt.axes(kwargs=[0.15, 0.15, 0.15, 0.075])
+ax_next_layer = plt.axes(kwargs=[0.32, 0.15, 0.15, 0.075])
+ax_prev_head  = plt.axes(kwargs=[0.49, 0.15, 0.15, 0.075])
+ax_next_head  = plt.axes(kwargs=[0.66, 0.15, 0.15, 0.075])
 
 # Buttons
 btn_prev_layer = Button(ax_prev_layer, 'Previous Layer')
