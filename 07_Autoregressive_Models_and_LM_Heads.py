@@ -23,8 +23,8 @@ generator = pipeline(
 	tokenizer=tokenizer,
 	return_full_text=False,  # If true the model will return the prompt it was given PLUS the response
 	max_new_tokens=50,       # Limit to a short response
-	do_sample=False,          # If this is False we'll just pick the most probable next token for output, which will result in the same output every run!
-	#temperature=0.9          # Temperature will be applied (0..1 -> min..max creativity) ONLY if `do_sample` is True - if it's False this has no effect!
+	do_sample=False,         # If this is False we'll just pick the most probable next token for output, which will result in the same output every run!
+	#temperature=0.9         # Temperature will be applied (0..1 -> min..max creativity) ONLY if `do_sample` is True - if it's False this has no effect!
 )
 
 # Print some details about the model

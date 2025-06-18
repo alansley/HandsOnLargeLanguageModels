@@ -9,7 +9,7 @@ model = AutoModelForCausalLM.from_pretrained(
 	device_map="cuda",
 	torch_dtype="auto",
 	trust_remote_code=False,
-	attn_implementation="eager"  # Skipping "flash_attention_2" as it takes forever to build
+	attn_implementation="eager"  # Could use "flash_attention_2" if we wanted - but no particular reason to, here
 )
 
 tokenizer = AutoTokenizer.from_pretrained(model_name)

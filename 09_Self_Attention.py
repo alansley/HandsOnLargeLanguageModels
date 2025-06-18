@@ -83,13 +83,13 @@ for i, tok in enumerate(tokens):
     print(f"{i:2}: {tok}")
 
 # Indices based on your token printout
-idx_dog = 1                # 'dog' is a single token...
-idxs_squirrel = [5, 6, 7]  # ...but 'squirrel' is made up from tokens [5,6,7] ("squ", "ir", and "rel")...
-idx_it = 9                 # ...and 'it' is a single token.
+idx_dog = 1               # 'dog' is a single token...
+idx_squirrel = [5, 6, 7]  # ...but 'squirrel' is made up from tokens [5,6,7] ("squ", "ir", and "rel")...
+idx_it = 9                # ...and 'it' is a single token.
 
 # Get embeddings
 emb_dog      = hidden_states[idx_dog]
-emb_squirrel = hidden_states[idxs_squirrel].mean(dim=0) # As "squirrel" is 3 tokens we have to average their embedding values!
+emb_squirrel = hidden_states[idx_squirrel].mean(dim=0)  # As "squirrel" is 3 tokens we have to average their embedding values!
 emb_it       = hidden_states[idx_it]
 
 # Now use cosine similarities to compare the embedding value of 'it' to both 'dog' and 'squirrel'

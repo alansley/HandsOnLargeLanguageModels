@@ -41,15 +41,16 @@ prompt = "The dog chased the squirrel because it"
 print(f"\n--- Prompt is: {prompt}")
 
 # Tokenise our prompt to get the token IDs...
-inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+prompt_input_ids = tokenizer(prompt, return_tensors="pt").to("cuda")
+print(prompt_input_ids)
 
 # ...then get what each token actually is.
-tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
+tokens = tokenizer.convert_ids_to_tokens(prompt_input_ids["input_ids"][0])
 
 # Generate outputs INCLUDING the attentions and hidden states!
 # Note: Each attention head contains three projection matrices for queries, keys, and values.
 with torch.no_grad():
-    outputs = model(**inputs, output_attentions=True, output_hidden_states=True)
+    outputs = model(**prompt_input_ids, output_attentions=True, output_hidden_states=True)
 
 # Access attention details & confirm the model config details are correct
 # Note: The `numel()` counts the NUMber of ELements in an array or tensor! So data like [[1,1,1], [2,2,2]] would have a

@@ -2,6 +2,8 @@ import gc
 from transformers import AutoModel, AutoTokenizer
 
 # Load a language model - in this case we'll pick one that can work with the DeBERTa tokenizer
+# Note: "BERT" standards for "Bidirectional Encoder Representations from Transformers"
+# Further reading: https://en.wikipedia.org/wiki/BERT_(language_model)
 model = AutoModel.from_pretrained("microsoft/deberta-v3-xsmall")
 
 # Load a tokenizer
@@ -66,7 +68,6 @@ print("\n--- Tokens with actual symbol embedding (look at the \"World\" line):")
 tokens_as_strings = tokenizer.convert_ids_to_tokens(tokens['input_ids'][0])
 for token in tokens_as_strings:
 	print(token)
-
 
 # ----- Just for fun, we'll send two messages to the tokenizer at once -----
 

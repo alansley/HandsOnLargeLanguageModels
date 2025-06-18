@@ -64,7 +64,14 @@ model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 pipe = pipeline(
 	model=model_path,
 	tokenizer=model_path,
+
+	# While `return_all_scores` is now deprecated, and the warning says "if you want a similar functionality use
+	# `top_k=None` instead of`return_all_scores=True` or `top_k=1` instead of `return_all_scores=False`" -
+	# using `top_k=None` rather than `return_all_scores=True` does NOT give us the same results - so I'm opting to just
+	# live with the deprecation warning for now.
 	return_all_scores=True,
+	#top_k=None,
+
 	device="cuda:0"
 )
 

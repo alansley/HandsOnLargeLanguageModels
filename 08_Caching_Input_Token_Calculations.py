@@ -28,8 +28,7 @@ the_greatest_love_song_in_the_world_about_a_bacon_sandwich = tokenizer.decode(so
 
 prompt = "Write a very long email apologizing to Princess Peach for the tragic gardening mishap. Explain how it happened."
 # Tokenize the input prompt
-input_ids = tokenizer(prompt, return_tensors="pt").input_ids
-input_ids = input_ids.to("cuda")
+prompt_input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
 
 # Function to time the execution of the provided function and return the generated text plus duration
 def time_execution_of(some_function) -> tuple[str, float]:
@@ -43,7 +42,7 @@ max_tokens = 1000
 # A lambda that generates some text and uses caching
 def generate_text_with_cache() -> str:
 	output_ids = model.generate(
-		input_ids=input_ids,
+		input_ids=prompt_input_ids,
 		max_new_tokens=max_tokens,
 		use_cache=True  # The default is to use key/value caching - but we'll be specific about it here
 	)
@@ -52,7 +51,7 @@ def generate_text_with_cache() -> str:
 # A lambda that generates some text where caching is explicitly disabled
 def generate_text_without_cache() -> str:
 	output_ids = model.generate(
-		input_ids=input_ids,
+		input_ids=prompt_input_ids,
 		max_new_tokens=max_tokens,
 		use_cache=False  # Without key/value caching we'll process every single input token right the way through all the transformer blocks!
 	)
@@ -76,6 +75,7 @@ print("=" * 100)
 print(f"\nNon-cache text is: {remove_blank_lines(noncaching_text)[:print_char_count]}")
 
 # Just for lolz
+print("\n")
 print("=" * 100)
 print(the_greatest_love_song_in_the_world_about_a_bacon_sandwich)
 
