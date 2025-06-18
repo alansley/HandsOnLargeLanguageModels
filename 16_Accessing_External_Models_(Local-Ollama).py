@@ -43,29 +43,45 @@ If it is positive return 1 and if it is negative return 0. Do not give any other
 review = "The film provides some great insight into the neurotic mindset of all comics -- even those who have reached the absolute top of the game."
 response: str = classify_sentiment_with_ollama(review).strip()
 
-# If we used a reasoning model then remove everything inside the <think>...</think> tags
-print_reasoning = True
-if response.startswith("<think>"):
-    close_thinking_index = response.find("</think>")
-    if close_thinking_index != -1:
-        reasoning_details = response[:close_thinking_index + 8]
-        if print_reasoning:
-            print(f"Reasoning details:\n{reasoning_details}")
+def print_response_details():
+    global response
 
-        # Update the response to be only the last character (should be 0 or 1)
-        response = response[-1]
+    # If we used a reasoning model then remove everything inside the <think>...</think> tags
+    print_reasoning = True
+    if response.startswith("<think>"):
+        close_thinking_index = response.find("</think>")
+        if close_thinking_index != -1:
+            reasoning_details = response[:close_thinking_index + 8]
+            if print_reasoning:
+                print(f"Reasoning details:\n{reasoning_details}")
+
+            # Update the response to be only the last character (should be 0 or 1)
+            response = response[-1]
+        else:
+            print("Somehow found opening <think> tag but couldn't find closing </think>!")
+            quit(-1)
+
+    print(f"\nReview:\n{review}")
+
+    # Print our result
+    if len(response) == 1:
+        if response == "1":
+            response_string: str = "Positive"
+        else:
+            response_string: str = "Negative"
+        print(f"\nOllama ({MODEL}) thinks this review is: {response_string}\n\n")
     else:
-        print("Somehow found opening <think> tag but couldn't find closing </think>!")
-        quit(-1)
+        print(f"Somehow don't get a single character response - we got: {response}")
 
-print(f"\nReview:\n{review}")
+# For our positive review
+print_response_details()
 
-# Print our result
-if len(response) == 1:
-    if response == "1":
-        response_string: str = "Positive"
-    else:
-        response_string: str = "Negative"
-    print(f"\nOllama ({MODEL}) thinks this review is: {response_string}")
-else:
-    print(f"Somehow don't get a single character response - we got: {response}")
+# Bonus negative review
+review = "Maybe don't name your musical 'Rent' if you don't even have a single song about leasing law, property management procedures, or net lease calculations. As a real estate professional I am very disappointed and feel I was misled."
+response = classify_sentiment_with_ollama(review).strip()
+print_response_details()
+
+# IDK, just playing with funny reviews now...
+review = "It's this movie where Colin Farrell is in a phone booth, and someone calls the phone booth, and if he leaves the phone booth he'll get shot. I think it was called 'The phone that couldn't hang up'"
+response = classify_sentiment_with_ollama(review).strip()
+print_response_details()
