@@ -1,3 +1,4 @@
 # Don't include my specific .venv folder or the file specifying the python version (I'm using 3.11.13 btw)
 .venv
 .python-version
+DataFiles/openai_api_key.txt
