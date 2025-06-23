@@ -1,0 +1,50 @@
+{
+  "builder_name": "csv",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "arxiv_nlp",
+  "dataset_size": 53609744,
+  "description": "",
+  "download_checksums": {
+    "hf://datasets/maartengr/arxiv_nlp@b56743e671f49880a17b7fab44b02f1df32fcaff/data.csv": {
+      "num_bytes": 53217245,
+      "checksum": null
+    }
+  },
+  "download_size": 53217245,
+  "features": {
+    "Titles": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Abstracts": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Years": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "Categories": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 106826989,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 53609744,
+      "num_examples": 44949,
+      "dataset_name": "arxiv_nlp"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

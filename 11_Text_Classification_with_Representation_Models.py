@@ -1,5 +1,5 @@
 import os
-from datasets import load_dataset
+from datasets import load_dataset, Dataset, load_from_disk
 import numpy as np
 from sklearn.metrics import classification_report
 from tqdm import tqdm
@@ -10,11 +10,24 @@ from transformers.pipelines.pt_utils import KeyDataset
 # reviews (I'm seeing 4,265 of each). Src: https://huggingface.co/datasets/cornell-movie-review-data/rotten_tomatoes
 dataset_name = "rotten_tomatoes"
 cached_dataset_uri = "DataFiles/" + dataset_name
-data = load_dataset(dataset_name)
 
-# Save the dataset if we haven't already so we can automatically reload from our cached copy next time
-if not os.path.exists(cached_dataset_uri):
-	data.save_to_disk(cached_dataset_uri)
+def load_data(slice_name: str = None):
+	# Get the data from hugging face if we don't already have it then save it to our cache
+	# Note: If a specific slice was specified then we only grab that slice.
+	if not os.path.exists(cached_dataset_uri):
+		if slice_name is not None:
+			data: Dataset = load_dataset(dataset_name)[slice_name]
+		else:
+			data: Dataset = load_dataset(dataset_name)
+		data.save_to_disk(cached_dataset_uri)
+		return data
+	else:
+		# Otherwise if we already have a cached copy then load that rather than re-downloading.
+		# Note: If we previously only downloaded a specific slice we don't have to specify it as that's all we have!
+		data: Dataset = load_from_disk(cached_dataset_uri)
+		return data
+
+dataset = load_data()
 
 # The data is broken up into `train`, `validation` and `test` datasets as follows:
 # DatasetDict({
@@ -31,9 +44,9 @@ if not os.path.exists(cached_dataset_uri):
 #       num_rows: 1066
 #   })
 # })
-print(data)
+print(dataset)
 
-reviews = data['train']
+reviews = dataset['train']
 print(f"\n--- Total number of reviews in the 'train' set: {len(reviews)}")
 
 # A label of 1 means it's a positive review of the movie (great!) while 0 means it's a negative review (sucked!)
@@ -77,8 +90,8 @@ pipe = pipeline(
 
 # Run inference on the "test" split of our movie review dataset
 y_prediction = []
-test_split_of_dataset = KeyDataset(data["test"], key="text")
-for output in tqdm(pipe(test_split_of_dataset), total=len(data["test"])):
+test_split_of_dataset = KeyDataset(dataset["test"], key="text")
+for output in tqdm(pipe(test_split_of_dataset), total=len(dataset["test"])):
 	negative_score = output[0]["score"]
 	positive_score = output[2]["score"]
 	assignment = np.argmax([negative_score, positive_score])
@@ -92,7 +105,7 @@ def evaluate_performance(y_true, y_pred):
 	performance = classification_report(y_true, y_pred, target_names=["Negative Review", "Positive Review"])
 	print(f"\n--- Performance results:\n\n{performance}")
 
-evaluate_performance(data["test"]["label"], y_prediction)
+evaluate_performance(dataset["test"]["label"], y_prediction)
 
 # When evaluating our performance of classifying a movie review, there are 4 possible outcomes:
 #   - TRUE POSITIVE  (TP) - The movie review is positive - and we correctly classified it as positive,
