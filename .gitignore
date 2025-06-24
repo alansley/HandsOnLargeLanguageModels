@@ -2,3 +2,11 @@
 .venv
 .python-version
 DataFiles/openai_api_key.txt
+
+# The topic models get saved via `pickle` so MY environment and YOUR environment must exactly match for
+# them to work - as such we won't keep these pre-processed versions. Also, they're huge!
+# $ tree -sh
+# ├── [3.3G]  bertopic_arxiv_mmr_t5_flan_large
+# ├── [407M]  bertopic_arxiv_mmr_t5_flan_small
+# └── [407M]  bertopic_arxiv_nlp_t5_flan_small
+DataFiles/Keywords

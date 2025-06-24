@@ -76,7 +76,7 @@ cluster = 0
 for index in np.where(clusters==cluster)[0][:3]:
 	print(abstracts[index][:150] + "... \n")
 
-# Reduce 384-dimensional embeddings to two dimensions for easier visualization
+# Reduce 384-dimensional embeddings to 2 dimensions for easier visualization
 reduced_embeddings = UMAP(n_components=2, min_dist=0.0, metric="cosine", random_state=42).fit_transform(embeddings)
 
 # Create dataframe

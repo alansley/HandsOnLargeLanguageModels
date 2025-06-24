@@ -5,8 +5,8 @@
 # The full pipline goes:
 # 1.) Clustering:
 #     a.) SBERT
-#     b.) SBERT
-#     c.) SBERT
+#     b.) UMAP
+#     c.) HDBSCAN
 # 2.) Topic Representation:
 #     a.) CountVectorizer (to generate the term frequency (TF))
 #     b.) c-TF-IDF
@@ -43,9 +43,9 @@ def load_data(slice_name_arg: str = None):
 # Download the dataset on first run, then save it & use the cached version in future runs
 dataset: Dataset = load_data(slice_name)
 
-# Extract metadata
-abstracts = dataset["Abstracts"]
+# Extract data
 titles    = dataset["Titles"]
+abstracts = dataset["Abstracts"]
 
 print("--- First record:")
 print(f"Title: {titles[0]}")
@@ -66,7 +66,7 @@ print(f"\n--- Created embeddings for {embeddings.shape[0]} abstracts, where each
 # handles non-linear relationships and structures better than PCA (Principal Component Analysis):
 # Further UMAP reading: https://arxiv.org/abs/1802.03426
 
-# Reduce 384-dimensional embeddings to 5 dimensions for easier visualization.
+# Reduce 384-dimensional embeddings to 2 dimensions for easier visualization.
 # Note: Generally, values between 5 and 10 work well to capture high-dimensional global structures.
 reduced_dimension_count = 2
 print(f"\n--- Creating UMAP model to reduce dimensions from {embeddings.shape[1]} to {reduced_dimension_count}...")
@@ -112,7 +112,7 @@ topic_model = BERTopic(
 print("\n--- The first topic just happens to be about speech (note: ASR is 'Automatic Speech Recognition')")
 print(topic_model.get_topic(0))
 
-# We can find topics by keyword - the result will look like:
+# We can find topics by keyword - the result will look something like:
 # (
 #  [7, 89, 96, 62, 44],
 #  [0.84470475, 0.833554, 0.832743, 0.83094364, 0.8301422]
@@ -148,28 +148,28 @@ print(f"\n--- Details for topic {topic_number} ({topic}) are:\n{topic_details}")
 # Note: Without this `show()`-ing a figure just prints the details to the console!
 pio.renderers.default = "browser"
 
-# Visualize topics and documents
-documents_fig = topic_model.visualize_documents(
-    docs=abstracts,
-	sample=0.025,  # We'll only visualise a random 2.5% of the documents as 44,949 is a lot! 2.5% is ~1000-ish.
-    #reduced_embeddings=reduced_embeddings,
-	embeddings=embeddings,
-    hide_annotations=True
-)
+# *** I HAVE NO IDEA WHY THIS PARTICULAR CHART FROM THE CALL TO visualize_documents DOES NOT WORK! =/ ***
+# # Visualize topics and documents
+# documents_fig = topic_model.visualize_documents(
+#     docs=abstracts,
+# 	sample=0.025,  # We'll only visualise a random 2.5% of the documents as 44,949 is a lot! 2.5% is ~1000-ish.
+#     reduced_embeddings=reduced_embeddings,
+#     hide_annotations=True
+# )
+#
+# # Replace the hover text with the corresponding titles. Note: The scatter is in fig.data[0]
+# titles_as_hover = ["Title: " + title for title in titles]
+# documents_fig.data[0].hovertext = titles_as_hover
+# documents_fig.data[0].hovertemplate = "%{hovertext}<extra></extra>"
+#
+# # Colour each title by topic in the legend
+# topics = topic_model.topics_
+# documents_fig.data[0].marker.color = topics
+#
+# # Now show the plot!
+# documents_fig.show()
 
-# Replace the hover text with the corresponding titles. Note: The scatter is in fig.data[0]
-#titles_as_hover = ["Title: " + title for title in titles]
-#documents_fig.data[0].hovertext = titles_as_hover
-#documents_fig.data[0].hovertemplate = "%{hovertext}<extra></extra>"
-
-# Colour each title by topic in the legend
-#topics = topic_model.topics_
-#documents_fig.data[0].marker.color = topics
-
-# Now show the plot!
-documents_fig.show()
-
-# Visualize barchart with ranked keywords - we'll only show the first dozen in this example
+# Visualize a barchart with ranked keywords - we'll only show the first dozen in this example
 bar_fig = topic_model.visualize_barchart(top_n_topics=12)
 bar_fig.show()
 
