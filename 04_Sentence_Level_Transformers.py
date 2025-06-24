@@ -23,3 +23,4 @@ print(vector[:12])
 
 # Clean up
 gc.collect()
+
