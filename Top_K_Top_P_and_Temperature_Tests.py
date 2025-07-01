@@ -146,9 +146,9 @@ def describe_settings(k, p, t):
 # 🔁 Full sweep
 # ----------------------------
 
-print("********************************************************************************************************************")
-print("CAREFUL: It's possible for this script to print some DERANGED SHIT - don't take it personally, it's just word-salad.")
-print("********************************************************************************************************************\n")
+print("**********************************************************************************************************************")
+print("CAREFUL: It's possible for this script to print some DERANGED things - don't take it personally, it's just word-salad.")
+print("**********************************************************************************************************************\n")
 
 # for tk in top_k_values:
 #     for tp in top_p_values:
